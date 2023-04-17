@@ -10,7 +10,7 @@ from model import Generator
 torch.backends.cudnn.enabled = False
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
-    
+
 def load_image(image_path):
     img = cv2.imread(image_path).astype(np.float32)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -30,18 +30,19 @@ def main():
     input_dir = './samples/inputs'
     output_dir = './samples/results'
 
-    checkpoint = './models/pytorch_generator_Paprika.pt'
+    # checkpoint = './models/pytorch_generator_Paprika.pt'
+    checkpoint = './models/face_paint_512_v2_0.pt'
     net = Generator()
     net.load_state_dict(torch.load(checkpoint, map_location="cpu"))
     net.to(device).eval()
     print(f"model loaded: {checkpoint}")
-    
+
     os.makedirs(output_dir, exist_ok=True)
 
     for image_name in sorted(os.listdir(input_dir)):
         if os.path.splitext(image_name)[-1] not in [".jpg", ".png", ".bmp", ".tiff"]:
             continue
-            
+
         image = load_image(os.path.join(input_dir, image_name))
 
         with torch.no_grad():
@@ -49,9 +50,9 @@ def main():
             out = net(input).squeeze(0).permute(1, 2, 0).cpu().numpy()
             out = (out + 1)*127.5
             out = np.clip(out, 0, 255).astype(np.uint8)
-            
+
         cv2.imwrite(os.path.join(output_dir, image_name), cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
         print(f"image saved: {image_name}")
 
 if __name__ == '__main__':
-  main()  
+  main()
